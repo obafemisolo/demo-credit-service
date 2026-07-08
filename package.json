@@ -1,0 +1,26 @@
+{
+  "name": "demo-credit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1",
+    "knex": "^3.3.0",
+    "mysql2": "^3.22.6",
+    "pnpm": "^11.10.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/knex": "^0.16.1",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11"
+  }
+}
