@@ -1,5 +1,16 @@
 require("dotenv").config();
 
+const isSslEnabled = process.env.DB_SSL_ENABLE === "true";
+
+const dbConnection = {
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "demo_credit",
+  ssl: isSslEnabled ? { rejectUnauthorized: false } : undefined,
+};
+
 const baseConfig = {
   client: "mysql2",
   migrations: {
@@ -16,14 +27,12 @@ const baseConfig = {
 module.exports = {
   development: {
     ...baseConfig,
-    connection: {
-      host: process.env.DB_HOST || "localhost",
-      port: Number(process.env.DB_PORT) || 3306,
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-      database: process.env.DB_NAME || "demo_credit",
-      ssl: process.env.DB_SSL_ENABLE || false,
-    },
+    connection: dbConnection,
+  },
+
+  production: {
+    ...baseConfig,
+    connection: dbConnection,
   },
 
   test: {

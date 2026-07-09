@@ -297,9 +297,7 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=demo_credit
-DB_SSL=false
-DB_SSL_REJECT_UNAUTHORIZED=true
-DB_SSL_CA=
+DB_SSL_ENABLE=false
 
 ADJUTOR_API_KEY=your_adjutor_api_key
 ```
@@ -313,11 +311,10 @@ DB_PORT=<aiven-mysql-port>
 DB_USER=<aiven-user>
 DB_PASSWORD=<aiven-password>
 DB_NAME=<aiven-database>
-DB_SSL=true
-DB_SSL_REJECT_UNAUTHORIZED=true
+DB_SSL_ENABLE=true
 ```
 
-If Aiven provides a CA certificate, add it as `DB_SSL_CA`. When pasting it into Render, keep it as one environment variable and replace line breaks with `\n`.
+The app converts `DB_SSL_ENABLE=true` into the SSL object expected by `mysql2`. Do not pass `ssl=true` directly, because `mysql2` treats the string `"true"` as an SSL profile name.
 
 If you still see `connect ETIMEDOUT`, confirm the Aiven MySQL port is correct and that the service allows public network access from Render. A wrong port often looks like a timeout.
 
