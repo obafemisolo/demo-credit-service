@@ -2,7 +2,7 @@ import express, { Application } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import Env from "./config/env";
+import Env from "./config/Env";
 import { morganStream } from "./config/logger";
 import errorHandler from "./middlewares/errorHandler";
 

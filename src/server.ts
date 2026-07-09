@@ -2,20 +2,27 @@ import http from "http";
 import app from "./app";
 
 import logger from "./config/logger";
-import env from "./config/env";
+import Env from "./config/Env";
+import {
+  checkDatabaseConnection,
+  closeDatabaseConnection,
+} from "./database/connection";
 
 const startServer = async (): Promise<void> => {
   try {
+    await checkDatabaseConnection();
+
     const server = http.createServer(app);
 
-    server.listen(env.APP.PORT, () => {
-      logger.info(`Demo Credit Wallet API running on port ${env.APP.PORT}`);
+    server.listen(Env.APP.PORT, () => {
+      logger.info(`Demo Credit Wallet API running on port ${Env.APP.PORT}`);
     });
 
     const gracefulShutdown = async (signal: string) => {
       logger.info(`${signal} received. Shutting down...`);
 
       server.close(async () => {
+        await closeDatabaseConnection();
         logger.info("Server and database connection closed");
         process.exit(0);
       });
