@@ -1,0 +1,338 @@
+{
+  "info": {
+    "_postman_id": "0d7cc94d-c38a-43dc-bb15-5a0878ac1111",
+    "name": "Demo Credit Wallet API",
+    "description": "Postman collection for the Demo Credit Wallet API. Create the primary user first; the test script saves the created user id as `primaryUserId` and protected wallet/history requests automatically send it as `x-user-id` for faux authentication.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.collectionVariables.get('baseUrl')) {",
+          "  pm.collectionVariables.set('baseUrl', 'http://localhost:5400');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5400",
+      "type": "string"
+    },
+    {
+      "key": "primaryUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recipientUserId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create Primary User - saves primaryUserId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('User created', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('primaryUserId', json.data.id);",
+                  "  pm.environment.set('primaryUserId', json.data.id);",
+                  "  pm.collectionVariables.set('fauxUserId', json.data.id);",
+                  "  pm.environment.set('fauxUserId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Solomon\",\n  \"lastName\": \"Obafemi\",\n  \"email\": \"solo{{$timestamp}}@example.com\",\n  \"phoneNumber\": \"0801{{$timestamp}}\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Creates the first user and stores `data.id` in `primaryUserId`. Protected requests use that id as the faux token."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Recipient User - saves recipientUserId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recipient user created', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "",
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('recipientUserId', json.data.id);",
+                  "  pm.environment.set('recipientUserId', json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Grace\",\n  \"lastName\": \"Hopper\",\n  \"email\": \"grace{{$timestamp}}@example.com\",\n  \"phoneNumber\": \"0901{{$timestamp}}\",\n  \"password\": \"secret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            },
+            "description": "Creates a second user and stores `data.id` in `recipientUserId` for transfer testing."
+          },
+          "response": []
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Primary User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{primaryUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{primaryUserId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Wallets",
+      "description": "Run `Create Primary User` first. These requests send `x-user-id: {{primaryUserId}}` as the faux token.",
+      "item": [
+        {
+          "name": "Fund Primary Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{primaryUserId}}",
+                "description": "Faux auth token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/{{primaryUserId}}/fund",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallets", "{{primaryUserId}}", "fund"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw From Primary Wallet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{primaryUserId}}",
+                "description": "Faux auth token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/{{primaryUserId}}/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallets", "{{primaryUserId}}", "withdraw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Transfer From Primary To Recipient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-user-id",
+                "value": "{{primaryUserId}}",
+                "description": "Faux auth token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientUserId\": \"{{recipientUserId}}\",\n  \"amount\": 1500\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/wallets/{{primaryUserId}}/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "wallets", "{{primaryUserId}}", "transfer"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Get Primary User Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-user-id",
+                "value": "{{primaryUserId}}",
+                "description": "Faux auth token"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/transactions/users/{{primaryUserId}}?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "transactions", "users", "{{primaryUserId}}"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin / Review Helpers",
+      "description": "These routes are useful for review and testing. Blacklisting a user will block that user from protected wallet routes.",
+      "item": [
+        {
+          "name": "Blacklist Primary User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{primaryUserId}}/blacklist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{primaryUserId}}", "blacklist"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Unblacklist Primary User",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{primaryUserId}}/unblacklist",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "{{primaryUserId}}", "unblacklist"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
