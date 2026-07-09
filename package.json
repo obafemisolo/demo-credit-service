@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node --import=tsx --watch ./src/server.ts",
-    "build": "tsc && tsup",
+    "dev": "pnpm build && node dist/server.js",
+    "build": "tsc",
     "start": "node dist/server.js",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",

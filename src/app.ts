@@ -38,6 +38,6 @@ app.get("/", (_req, res) => {
 
 const [notFoundHandler, errorLogger] = errorHandler();
 app.use(notFoundHandler);
-app.use(errorHandler);
+app.use(errorLogger);
 
 export default app;
