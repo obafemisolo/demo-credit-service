@@ -5,6 +5,7 @@ import morgan from "morgan";
 import Env from "./config/Env";
 import { morganStream } from "./config/logger";
 import errorHandler from "./middlewares/errorHandler";
+import userRoutes from "./modules/users/user.routes";
 
 const app: Application = express();
 
@@ -35,6 +36,8 @@ app.get("/", (_req, res) => {
     version: "1.0.0",
   });
 });
+
+app.use("/api/users", userRoutes);
 
 const [notFoundHandler, errorLogger] = errorHandler();
 app.use(notFoundHandler);
