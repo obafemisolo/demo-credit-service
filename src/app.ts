@@ -5,6 +5,7 @@ import morgan from "morgan";
 import Env from "./config/Env";
 import { morganStream } from "./config/logger";
 import errorHandler from "./middlewares/errorHandler";
+import transactionRoutes from "./modules/transactions/transaction.routes";
 import userRoutes from "./modules/users/user.routes";
 import walletRoutes from "./modules/wallets/wallet.routes";
 
@@ -40,6 +41,7 @@ app.get("/", (_req, res) => {
 
 app.use("/api/users", userRoutes);
 app.use("/api/wallets", walletRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 const [notFoundHandler, errorLogger] = errorHandler();
 app.use(notFoundHandler);

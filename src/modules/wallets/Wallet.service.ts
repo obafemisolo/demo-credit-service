@@ -27,7 +27,11 @@ export class WalletService {
     this.ensureWalletCanTransact(wallet);
 
     const payment = this.simulateProviderPayment();
-    const fundedWallet = await walletRepository.fundUser(userId, dto.amount);
+    const fundedWallet = await walletRepository.fundUser(
+      userId,
+      dto.amount,
+      payment.reference,
+    );
 
     if (!fundedWallet) {
       throw new NotFoundError("Wallet not found");
@@ -53,7 +57,11 @@ export class WalletService {
     this.ensureSufficientBalance(Number(wallet.balance), dto.amount);
 
     const payment = this.simulateProviderPayment();
-    const result = await walletRepository.withdrawFromUser(userId, dto.amount);
+    const result = await walletRepository.withdrawFromUser(
+      userId,
+      dto.amount,
+      payment.reference,
+    );
 
     if (!result.wallet) {
       throw new NotFoundError("Wallet not found");
@@ -99,6 +107,7 @@ export class WalletService {
       senderId,
       dto.recipientUserId,
       dto.amount,
+      payment.reference,
     );
 
     if (!result.senderWallet) {
@@ -145,7 +154,7 @@ export class WalletService {
 
   private ensureSufficientBalance(balance: number, amount: number): void {
     if (balance < amount) {
-      throw new ValidationError("Insufficient balance");
+      throw new AppError(400, "Insufficient balance");
     }
   }
 

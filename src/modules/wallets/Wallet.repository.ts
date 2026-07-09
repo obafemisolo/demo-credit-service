@@ -1,22 +1,18 @@
 import crypto from "crypto";
-
 import type { Knex } from "knex";
 
+import type { CreateTransactionRecord } from "../../@types/transactions";
 import type { User } from "../../@types/users";
-
 import type { CreateWalletRecord, Wallet } from "../../@types/wallets";
-
+import { AppError } from "../../common/errors/AppError";
 import db from "../../database/connection";
-
+import { TRANSACTIONS_TABLE } from "../transactions/Transaction.model";
 import { USERS_TABLE } from "../users/User.model";
-
 import {
   ACTIVE_WALLET_STATUS,
   DEFAULT_WALLET_CURRENCY,
   WALLETS_TABLE,
 } from "./Wallet.model";
-
-import { AppError } from "../../common/errors/AppError";
 
 export class WalletRepository {
   async findUserById(id: string): Promise<User | undefined> {
@@ -53,32 +49,69 @@ export class WalletRepository {
     return this.createForUser(userId);
   }
 
-  async fundUser(userId: string, amount: number): Promise<Wallet | undefined> {
+  async fundUser(
+    userId: string,
+    amount: number,
+    reference: string,
+  ): Promise<Wallet | undefined> {
     await this.findOrCreateWalletByUserId(userId);
 
-    await db<Wallet>(WALLETS_TABLE)
-      .where({ user_id: userId })
-      .increment("balance", amount)
-      .update({ updated_at: db.fn.now() });
+    return db.transaction(async (trx) => {
+      const wallet = await this.findWalletForUpdate(trx, userId);
+      if (!wallet) return undefined;
 
-    return this.findWalletByUserId(userId);
+      const balanceBefore = Number(wallet.balance);
+      const balanceAfter = balanceBefore + amount;
+
+      await trx<Wallet>(WALLETS_TABLE)
+        .where({ user_id: userId })
+        .update({ balance: balanceAfter, updated_at: trx.fn.now() });
+
+      await this.createTransaction(trx, {
+        id: crypto.randomUUID(),
+        reference,
+        wallet_id: wallet.id,
+        user_id: userId,
+        type: "fund",
+        direction: "credit",
+        amount,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
+      });
+
+      return trx<Wallet>(WALLETS_TABLE).where({ user_id: userId }).first();
+    });
   }
 
   async withdrawFromUser(
     userId: string,
     amount: number,
+    reference: string,
   ): Promise<{ wallet?: Wallet; completed: boolean }> {
     return db.transaction(async (trx) => {
       const wallet = await this.findWalletForUpdate(trx, userId);
       if (!wallet) return { completed: false };
 
-      const balance = Number(wallet.balance);
-      if (balance < amount) return { wallet, completed: false };
+      const balanceBefore = Number(wallet.balance);
+      if (balanceBefore < amount) return { wallet, completed: false };
+
+      const balanceAfter = balanceBefore - amount;
 
       await trx<Wallet>(WALLETS_TABLE)
         .where({ user_id: userId })
-        .decrement("balance", amount)
-        .update({ updated_at: trx.fn.now() });
+        .update({ balance: balanceAfter, updated_at: trx.fn.now() });
+
+      await this.createTransaction(trx, {
+        id: crypto.randomUUID(),
+        reference,
+        wallet_id: wallet.id,
+        user_id: userId,
+        type: "withdraw",
+        direction: "debit",
+        amount,
+        balance_before: balanceBefore,
+        balance_after: balanceAfter,
+      });
 
       const updatedWallet = await trx<Wallet>(WALLETS_TABLE)
         .where({ user_id: userId })
@@ -92,6 +125,7 @@ export class WalletRepository {
     senderId: string,
     recipientId: string,
     amount: number,
+    reference: string,
   ): Promise<{
     senderWallet?: Wallet;
     recipientWallet?: Wallet;
@@ -105,19 +139,50 @@ export class WalletRepository {
         return { senderWallet, recipientWallet, completed: false };
       }
 
-      if (Number(senderWallet.balance) < amount) {
+      const senderBalanceBefore = Number(senderWallet.balance);
+      if (senderBalanceBefore < amount) {
         return { senderWallet, recipientWallet, completed: false };
       }
 
+      const recipientBalanceBefore = Number(recipientWallet.balance);
+      const senderBalanceAfter = senderBalanceBefore - amount;
+      const recipientBalanceAfter = recipientBalanceBefore + amount;
+
       await trx<Wallet>(WALLETS_TABLE)
         .where({ user_id: senderId })
-        .decrement("balance", amount)
-        .update({ updated_at: trx.fn.now() });
+        .update({ balance: senderBalanceAfter, updated_at: trx.fn.now() });
 
       await trx<Wallet>(WALLETS_TABLE)
         .where({ user_id: recipientId })
-        .increment("balance", amount)
-        .update({ updated_at: trx.fn.now() });
+        .update({ balance: recipientBalanceAfter, updated_at: trx.fn.now() });
+
+      await this.createTransaction(trx, {
+        id: crypto.randomUUID(),
+        reference,
+        wallet_id: senderWallet.id,
+        user_id: senderId,
+        related_wallet_id: recipientWallet.id,
+        related_user_id: recipientId,
+        type: "transfer",
+        direction: "debit",
+        amount,
+        balance_before: senderBalanceBefore,
+        balance_after: senderBalanceAfter,
+      });
+
+      await this.createTransaction(trx, {
+        id: crypto.randomUUID(),
+        reference,
+        wallet_id: recipientWallet.id,
+        user_id: recipientId,
+        related_wallet_id: senderWallet.id,
+        related_user_id: senderId,
+        type: "transfer",
+        direction: "credit",
+        amount,
+        balance_before: recipientBalanceBefore,
+        balance_after: recipientBalanceAfter,
+      });
 
       const [updatedSenderWallet, updatedRecipientWallet] = await Promise.all([
         trx<Wallet>(WALLETS_TABLE).where({ user_id: senderId }).first(),
@@ -140,6 +205,16 @@ export class WalletRepository {
       .where({ user_id: userId })
       .forUpdate()
       .first();
+  }
+
+  private async createTransaction(
+    trx: Knex.Transaction,
+    transaction: CreateTransactionRecord,
+  ): Promise<void> {
+    await trx<CreateTransactionRecord>(TRANSACTIONS_TABLE).insert({
+      ...transaction,
+      status: transaction.status || "successful",
+    });
   }
 }
 

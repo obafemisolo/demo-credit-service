@@ -62,7 +62,11 @@ describe("WalletService", () => {
 
     const result = await walletService.fundUser("user-id", { amount: 5000 });
 
-    expect(repository.fundUser).toHaveBeenCalledWith("user-id", 5000);
+    expect(repository.fundUser).toHaveBeenCalledWith(
+      "user-id",
+      5000,
+      expect.any(String),
+    );
     expect(result).toEqual(
       expect.objectContaining({
         amount: 5000,
@@ -87,7 +91,11 @@ describe("WalletService", () => {
       amount: 2000,
     });
 
-    expect(repository.withdrawFromUser).toHaveBeenCalledWith("user-id", 2000);
+    expect(repository.withdrawFromUser).toHaveBeenCalledWith(
+      "user-id",
+      2000,
+      expect.any(String),
+    );
     expect(result.type).toBe("withdraw");
     expect(result.wallet.balance).toBe(3000);
   });
@@ -141,6 +149,7 @@ describe("WalletService", () => {
       "sender-id",
       "recipient-id",
       2000,
+      expect.any(String),
     );
     expect(result.type).toBe("transfer");
     expect(result.wallet.balance).toBe(3000);
