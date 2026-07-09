@@ -12,13 +12,22 @@ import {
   ConflictError,
   NotFoundError,
 } from "../../common/errors/globalErrorHandler";
+import { AdjutorService } from "../adjutor/Adjutor.service";
+import { AppError } from "../../common/errors/AppError";
 
 export class UserService {
-  async createUser(payload: CreateUserRequest): Promise<UserResponse> {
-    const email = payload.email.trim().toLowerCase();
-    const phoneNumber = payload.phoneNumber.trim();
+  async createUser(dto: CreateUserRequest): Promise<UserResponse> {
+    const email = dto.email.trim().toLowerCase();
+    const phoneNumber = dto.phoneNumber.trim();
+
+    const isBlacklisted = await this.isBlackListed(dto);
+
+    if (isBlacklisted) {
+      throw new AppError(403, "User cannot be onboarded");
+    }
 
     const existingEmail = await userRepository.findByEmail(email);
+
     if (existingEmail) {
       throw new ConflictError("Email already exists");
     }
@@ -31,11 +40,11 @@ export class UserService {
 
     const user = await userRepository.create({
       id: crypto.randomUUID(),
-      first_name: payload.firstName.trim(),
-      last_name: payload.lastName.trim(),
+      first_name: dto.firstName.trim(),
+      last_name: dto.lastName.trim(),
       email,
       phone_number: phoneNumber,
-      password_hash: this.hashPassword(payload.password),
+      password_hash: this.hashPassword(dto.password),
     });
 
     return toUserResponse(user);
@@ -94,6 +103,10 @@ export class UserService {
     const hash = crypto.scryptSync(password, salt, 64).toString("hex");
 
     return `${salt}:${hash}`;
+  }
+
+  private async isBlackListed(dto: CreateUserRequest) {
+    return await AdjutorService.isBlacklisted(dto.email, dto.phoneNumber);
   }
 }
 

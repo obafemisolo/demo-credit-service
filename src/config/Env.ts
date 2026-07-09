@@ -35,4 +35,6 @@ export default {
   ORGANIZATION: {
     NAME: "LendSqr",
   },
+
+  ADJUTOR_API_KEY: process.env.ADJUTOR_API_KEY || "",
 };
