@@ -269,7 +269,7 @@ x-user-id: <user-id>
 
 - Node.js LTS
 - MySQL
-- pnpm
+- npm
 
 ### Clone the Project
 
@@ -281,7 +281,7 @@ cd demo-credit
 ### Install Dependencies
 
 ```bash
-pnpm install
+npm install
 ```
 
 ### Configure Environment
@@ -310,13 +310,13 @@ CREATE DATABASE demo_credit;
 ### Run Migrations
 
 ```bash
-pnpm db:migrate
+npm run db:migrate
 ```
 
 ### Start Development Server
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 The API should be available at:
@@ -354,25 +354,25 @@ This mirrors the faux token authentication used by the API.
 Run unit tests:
 
 ```bash
-pnpm test
+npm run test
 ```
 
 Run TypeScript checks:
 
 ```bash
-pnpm typecheck
+npm run typecheck
 ```
 
 Build the project:
 
 ```bash
-pnpm build
+npm build
 ```
 
 Start compiled output:
 
 ```bash
-pnpm start
+npm start
 ```
 
 ## Validation and Error Handling
@@ -424,13 +424,13 @@ The goal is to keep failures observable without hiding them behind too much abst
 ## Project Scripts
 
 ```bash
-pnpm dev          # run server in watch mode
-pnpm db:migrate   # run database migrations
-pnpm db:rollback  # rollback last migration
-pnpm test         # run unit tests
-pnpm typecheck    # run TypeScript checks
-pnpm build        # compile TypeScript
-pnpm start        # run compiled app
+npm run dev          # run server in watch mode
+npm run db:migrate   # run database migrations
+npm run db:rollback  # rollback last migration
+npm run test         # run unit tests
+npm run typecheck    # run TypeScript checks
+npm run build        # compile TypeScript
+npm start        # run compiled app
 ```
 
 ## Final Note
