@@ -8,8 +8,6 @@ export default {
     HOST: process.env.HOST || "localhost",
     PORT: requireNumberEnv("PORT", 5400),
     APP_URL: process.env.APP_URL || "localhost",
-    API_VERSION: process.env.API_VERSION as string,
-    HOSTER: process.env.HOSTER || "LOCAL",
   },
 
   DATABASE: {
@@ -23,13 +21,7 @@ export default {
   },
 
   SECURITY: {
-    CORS_ORIGIN: "",
-    // JWT configuration
-    JWT_SECRET: requireEnv("JWT_SECRET", "dev-jwt-secret-change-me"),
-    JWT_REFRESH_SECRET: requireEnv(
-      "JWT_REFRESH_SECRET",
-      "dev-refresh-secret-change-me",
-    ),
+    CORS_ORIGIN: "*",
   },
 
   ORGANIZATION: {

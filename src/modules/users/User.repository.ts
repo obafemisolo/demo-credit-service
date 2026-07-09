@@ -1,17 +1,44 @@
+import crypto from "crypto";
+
 import type { CreateUserRecord, User } from "../../@types/users";
+import type { CreateWalletRecord, Wallet } from "../../@types/wallets";
 import db from "../../database/connection";
+import {
+  ACTIVE_WALLET_STATUS,
+  DEFAULT_WALLET_CURRENCY,
+  WALLETS_TABLE,
+} from "../wallets/Wallet.model";
 import { USERS_TABLE } from "./User.model";
 
 export class UserRepository {
+  async createWithWallet(user: CreateUserRecord): Promise<User> {
+    return db.transaction(async (trx) => {
+      await trx<User>(USERS_TABLE).insert(user);
+
+      const wallet: CreateWalletRecord = {
+        id: crypto.randomUUID(),
+        user_id: user.id,
+        balance: 0,
+        currency: DEFAULT_WALLET_CURRENCY,
+        status: ACTIVE_WALLET_STATUS,
+      };
+
+      await trx<Wallet>(WALLETS_TABLE).insert(wallet);
+
+      const createdUser = await trx<User>(USERS_TABLE)
+        .where({ id: user.id })
+        .first();
+
+      if (!createdUser) {
+        throw new Error("Failed to create user");
+      }
+
+      return createdUser;
+    });
+  }
+
   async create(user: CreateUserRecord): Promise<User> {
-    await db<User>(USERS_TABLE).insert(user);
-
-    const createdUser = await this.findById(user.id);
-    if (!createdUser) {
-      throw new Error("Failed to create user");
-    }
-
-    return createdUser;
+    return this.createWithWallet(user);
   }
 
   async findAll(
@@ -57,7 +84,6 @@ export class UserRepository {
 
     return this.findById(id);
   }
-
 }
 
 export default new UserRepository();

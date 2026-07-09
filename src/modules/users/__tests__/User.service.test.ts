@@ -5,7 +5,6 @@ import {
 } from "../../../common/errors/globalErrorHandler";
 import userRepository from "../User.repository";
 import userService from "../User.service";
-import walletRepository from "../../wallets/Wallet.repository";
 
 jest.mock("../../adjutor/Adjutor.service", () => ({
   AdjutorService: {
@@ -16,7 +15,7 @@ jest.mock("../../adjutor/Adjutor.service", () => ({
 jest.mock("../User.repository", () => ({
   __esModule: true,
   default: {
-    create: jest.fn(),
+    createWithWallet: jest.fn(),
     findAll: jest.fn(),
     findById: jest.fn(),
     findByEmail: jest.fn(),
@@ -25,15 +24,7 @@ jest.mock("../User.repository", () => ({
   },
 }));
 
-jest.mock("../../wallets/Wallet.repository", () => ({
-  __esModule: true,
-  default: {
-    createForUser: jest.fn(),
-  },
-}));
-
 const repository = jest.mocked(userRepository);
-const wallet = jest.mocked(walletRepository);
 
 function buildUser(overrides: Partial<User> = {}): User {
   const now = new Date("2026-07-09T10:00:00.000Z");
@@ -61,15 +52,16 @@ describe("UserService", () => {
     it("creates a user with normalized values and hides the password hash", async () => {
       repository.findByEmail.mockResolvedValue(undefined);
       repository.findByPhoneNumber.mockResolvedValue(undefined);
-      repository.create.mockImplementation(async (record: CreateUserRecord) =>
-        buildUser({
-          id: record.id,
-          first_name: record.first_name,
-          last_name: record.last_name,
-          email: record.email,
-          phone_number: record.phone_number,
-          password_hash: record.password_hash,
-        }),
+      repository.createWithWallet.mockImplementation(
+        async (record: CreateUserRecord) =>
+          buildUser({
+            id: record.id,
+            first_name: record.first_name,
+            last_name: record.last_name,
+            email: record.email,
+            phone_number: record.phone_number,
+            password_hash: record.password_hash,
+          }),
       );
 
       const result = await userService.createUser({
@@ -80,7 +72,7 @@ describe("UserService", () => {
         password: "secret123",
       });
 
-      expect(repository.create).toHaveBeenCalledWith(
+      expect(repository.createWithWallet).toHaveBeenCalledWith(
         expect.objectContaining({
           first_name: "Ada",
           last_name: "Lovelace",
@@ -99,7 +91,6 @@ describe("UserService", () => {
           isBlacklisted: false,
         }),
       );
-      expect(wallet.createForUser).toHaveBeenCalledWith(result.id);
       expect(result).not.toHaveProperty("password_hash");
       expect(result).not.toHaveProperty("password");
     });
@@ -117,7 +108,7 @@ describe("UserService", () => {
         }),
       ).rejects.toBeInstanceOf(ConflictError);
 
-      expect(repository.create).not.toHaveBeenCalled();
+      expect(repository.createWithWallet).not.toHaveBeenCalled();
     });
 
     it("throws a conflict error when phone number already exists", async () => {
@@ -134,7 +125,7 @@ describe("UserService", () => {
         }),
       ).rejects.toBeInstanceOf(ConflictError);
 
-      expect(repository.create).not.toHaveBeenCalled();
+      expect(repository.createWithWallet).not.toHaveBeenCalled();
     });
   });
 

@@ -34,7 +34,7 @@ app.use(
 app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
-    message: "Demo Credit Wallet API",
+    message: "Demo Credit Wallet API Is A Ok",
     version: "1.0.0",
   });
 });
