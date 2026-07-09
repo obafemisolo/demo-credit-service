@@ -1,4 +1,4 @@
-# Demo Credit Wallet API
+# Lendsqr Demo Credit Wallet API Service
 
 Demo Credit is a small wallet service built for the Lendsqr backend engineering assessment. The product story is simple: a borrower needs a wallet to receive loan funds, move money to another user, and make withdrawals. The implementation follows that story closely, keeping the core wallet behavior explicit without building features the assessment did not ask for.
 
@@ -274,7 +274,7 @@ x-user-id: <user-id>
 ### Clone the Project
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/obafemisolo/demo-credit-service
 cd demo-credit
 ```
 
