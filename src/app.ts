@@ -6,6 +6,7 @@ import Env from "./config/Env";
 import { morganStream } from "./config/logger";
 import errorHandler from "./middlewares/errorHandler";
 import userRoutes from "./modules/users/user.routes";
+import walletRoutes from "./modules/wallets/wallet.routes";
 
 const app: Application = express();
 
@@ -38,6 +39,7 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/wallets", walletRoutes);
 
 const [notFoundHandler, errorLogger] = errorHandler();
 app.use(notFoundHandler);

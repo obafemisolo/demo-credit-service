@@ -1,6 +1,9 @@
 import crypto from "crypto";
 
-import type { CreateUserRequest, UserResponse } from "../../@types/users";
+import type {
+  CreateUserRequest,
+  UserResponse,
+} from "../../@types/users";
 
 import {
   createPaginatedResponse,
@@ -14,6 +17,7 @@ import {
 } from "../../common/errors/globalErrorHandler";
 import { AdjutorService } from "../adjutor/Adjutor.service";
 import { AppError } from "../../common/errors/AppError";
+import walletRepository from "../wallets/Wallet.repository";
 
 export class UserService {
   async createUser(dto: CreateUserRequest): Promise<UserResponse> {
@@ -46,6 +50,8 @@ export class UserService {
       phone_number: phoneNumber,
       password_hash: this.hashPassword(dto.password),
     });
+
+    await walletRepository.createForUser(user.id);
 
     return toUserResponse(user);
   }

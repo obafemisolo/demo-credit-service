@@ -5,6 +5,13 @@ import {
 } from "../../../common/errors/globalErrorHandler";
 import userRepository from "../User.repository";
 import userService from "../User.service";
+import walletRepository from "../../wallets/Wallet.repository";
+
+jest.mock("../../adjutor/Adjutor.service", () => ({
+  AdjutorService: {
+    isBlacklisted: jest.fn().mockResolvedValue(false),
+  },
+}));
 
 jest.mock("../User.repository", () => ({
   __esModule: true,
@@ -18,7 +25,15 @@ jest.mock("../User.repository", () => ({
   },
 }));
 
+jest.mock("../../wallets/Wallet.repository", () => ({
+  __esModule: true,
+  default: {
+    createForUser: jest.fn(),
+  },
+}));
+
 const repository = jest.mocked(userRepository);
+const wallet = jest.mocked(walletRepository);
 
 function buildUser(overrides: Partial<User> = {}): User {
   const now = new Date("2026-07-09T10:00:00.000Z");
@@ -84,6 +99,7 @@ describe("UserService", () => {
           isBlacklisted: false,
         }),
       );
+      expect(wallet.createForUser).toHaveBeenCalledWith(result.id);
       expect(result).not.toHaveProperty("password_hash");
       expect(result).not.toHaveProperty("password");
     });

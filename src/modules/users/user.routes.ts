@@ -1,7 +1,10 @@
 import { Router } from "express";
 
 import userController from "./User.controller";
-import { validateCreateUser, validateUserId } from "./user.validator";
+import {
+  validateCreateUser,
+  validateUserId,
+} from "./user.validator";
 
 const router: Router = Router();
 

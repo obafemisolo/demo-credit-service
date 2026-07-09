@@ -57,6 +57,7 @@ export class UserRepository {
 
     return this.findById(id);
   }
+
 }
 
 export default new UserRepository();
