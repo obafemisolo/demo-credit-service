@@ -22,6 +22,7 @@ module.exports = {
       user: process.env.DB_USER || "root",
       password: process.env.DB_PASSWORD || "",
       database: process.env.DB_NAME || "demo_credit",
+      ssl: process.env.DB_SSL_ENABLE || false,
     },
   },
 

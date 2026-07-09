@@ -297,9 +297,29 @@ DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=
 DB_NAME=demo_credit
+DB_SSL=false
+DB_SSL_REJECT_UNAUTHORIZED=true
+DB_SSL_CA=
 
 ADJUTOR_API_KEY=your_adjutor_api_key
 ```
+
+For hosted MySQL providers such as Aiven, SSL is usually required. On Render, set these environment variables:
+
+```env
+NODE_ENV=production
+DB_HOST=mysql-xxxxx.aivencloud.com
+DB_PORT=<aiven-mysql-port>
+DB_USER=<aiven-user>
+DB_PASSWORD=<aiven-password>
+DB_NAME=<aiven-database>
+DB_SSL=true
+DB_SSL_REJECT_UNAUTHORIZED=true
+```
+
+If Aiven provides a CA certificate, add it as `DB_SSL_CA`. When pasting it into Render, keep it as one environment variable and replace line breaks with `\n`.
+
+If you still see `connect ETIMEDOUT`, confirm the Aiven MySQL port is correct and that the service allows public network access from Render. A wrong port often looks like a timeout.
 
 Create the MySQL database:
 
@@ -366,7 +386,7 @@ npm run typecheck
 Build the project:
 
 ```bash
-npm build
+npm run build
 ```
 
 Start compiled output:
