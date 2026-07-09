@@ -24,7 +24,7 @@ export class UserController {
   });
 
   getUserById = asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.getUserById(req.params.id);
+    const user = await userService.getUserById(String(req.params.id));
 
     res
       .status(200)
@@ -32,7 +32,7 @@ export class UserController {
   });
 
   blacklistUser = asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.blacklistUser(req.params.id);
+    const user = await userService.blacklistUser(String(req.params.id));
 
     res
       .status(200)
@@ -40,7 +40,7 @@ export class UserController {
   });
 
   unblacklistUser = asyncHandler(async (req: Request, res: Response) => {
-    const user = await userService.unblacklistUser(req.params.id);
+    const user = await userService.unblacklistUser(String(req.params.id));
 
     res
       .status(200)
