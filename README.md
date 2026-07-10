@@ -99,7 +99,8 @@ This keeps audit history simple and useful.
 
 ### Adjutor Karma Check
 
-Before onboarding a user, the app checks email and phone number against the Lendsqr Adjutor Karma endpoint. If `ADJUTOR_API_KEY` is not configured, the service returns `false` so the project can run locally. In a real deployment, `ADJUTOR_API_KEY` should be required.
+Before onboarding a user, the app checks email and phone number against the Lendsqr Adjutor Karma endpoint.
+For the deployed assessment environment, `ADJUTOR_API_KEY` is configured so user onboarding checks the Lendsqr Adjutor Karma API before account creation.
 
 ## ER Diagram
 
@@ -415,7 +416,7 @@ Security measures included:
 Production improvements I would add:
 
 - Real authentication with JWT or session-based auth
-- Password hashing with bcrypt/argon2
+- Passwords are hashed using Node.js crypto scrypt for this MVP
 - Rate limiting
 - Request id tracing
 - Structured audit logs
@@ -453,4 +454,4 @@ npm start        # run compiled app
 ## Final Note
 
 This project intentionally stays focused on the assessment. It has enough structure to show maintainability and safe wallet behavior, but avoids building a full banking platform around a small MVP.
-Thank you Ma/Sir for reading thus far.
+Thank you for reviewing this submission.
