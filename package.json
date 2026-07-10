@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node --import=tsx --watch ./src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "node init && node --import=tsx --watch ./src/server.ts",
+    "build": "node init && tsc",
+    "start": "node init && node dist/server.js",
     "db:migrate": "knex --knexfile knexfile.js migrate:latest",
     "db:rollback": "knex --knexfile knexfile.js migrate:rollback",
     "db:seed": "knex seed:run --knexfile knexfile.js",
@@ -28,7 +28,6 @@
     "knex": "^3.3.0",
     "morgan": "^1.11.0",
     "mysql2": "^3.22.6",
-    "pnpm": "^11.10.0",
     "tsx": "^4.23.0",
     "winston": "^3.19.0"
   },
